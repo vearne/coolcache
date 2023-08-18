@@ -18,15 +18,17 @@ For expired keys, lazy deletion and periodic deletion are adopted to clarify
 type ShardCache struct {
 	sync.RWMutex
 	// Element.Value is a instance of KVItem
-	dataMap map[any]*list.Element
-	lruList *list.List
-	cap     uint64
+	dataMap      map[any]*list.Element
+	lruList      *list.List
+	cap          uint64
+	CallBackFunc CallBackFunc
 }
 
-func NewShardCache(cap uint64) *ShardCache {
+func NewShardCache(cap uint64, f CallBackFunc) *ShardCache {
 	sc := ShardCache{
-		dataMap: make(map[any]*list.Element, 100),
-		cap:     cap,
+		dataMap:      make(map[any]*list.Element, 100),
+		cap:          cap,
+		CallBackFunc: f,
 	}
 	sc.lruList = list.New()
 	go func(sc *ShardCache) {
@@ -59,6 +61,10 @@ func (sc *ShardCache) Set(key any, value any, duration time.Duration) {
 		kv := front.Value.(KVItem)
 		delete(sc.dataMap, kv.key)
 		sc.lruList.Remove(front)
+
+		if sc.CallBackFunc != nil {
+			go sc.CallBackFunc(key, kv.value)
+		}
 	}
 	ele = sc.lruList.PushBack(KVItem{key: key, value: value, expiredAt: time.Now().Add(duration)})
 	sc.dataMap[key] = ele
@@ -74,6 +80,10 @@ func (sc *ShardCache) Remove(key any) any {
 		delete(sc.dataMap, key)
 		sc.lruList.Remove(ele)
 		sc.Unlock()
+
+		if sc.CallBackFunc != nil {
+			go sc.CallBackFunc(key, kv.value)
+		}
 		return kv.value
 	}
 	return nil
@@ -92,6 +102,10 @@ func (sc *ShardCache) Get(key any) any {
 			delete(sc.dataMap, key)
 			sc.lruList.Remove(ele)
 			sc.Unlock()
+			
+			if sc.CallBackFunc != nil {
+				go sc.CallBackFunc(key, kv.value)
+			}
 			return nil
 		} else {
 			kv := ele.Value.(KVItem)

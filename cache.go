@@ -17,6 +17,7 @@ type Cache struct {
 	shards              []*ShardCache
 	ExpireCleanInterval time.Duration
 	ExitChan            chan struct{}
+	CallBackFunc        CallBackFunc
 	// prometheus
 	PromReqTotal *prometheus.CounterVec
 	PromSize     prometheus.GaugeFunc
@@ -40,7 +41,7 @@ func NewCache(opts ...Option) *Cache {
 	// init shard slice
 	c.shards = make([]*ShardCache, c.ShardNumber)
 	for i := 0; i < int(c.ShardNumber); i++ {
-		c.shards[i] = NewShardCache(c.Cap / c.ShardNumber)
+		c.shards[i] = NewShardCache(c.Cap/c.ShardNumber, c.CallBackFunc)
 	}
 
 	// prometheus metrics

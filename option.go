@@ -1,7 +1,10 @@
 package coolcache
 
-import "time"
+import (
+	"time"
+)
 
+type CallBackFunc func(key, value any)
 type Option func(cache *Cache)
 
 func WithName(name string) Option {
@@ -25,5 +28,11 @@ func WithShardNumber(num uint64) Option {
 func WithExpireCleanInterval(interval time.Duration) Option {
 	return func(c *Cache) {
 		c.ExpireCleanInterval = interval
+	}
+}
+
+func WithCallBackFunc(f CallBackFunc) Option {
+	return func(c *Cache) {
+		c.CallBackFunc = f
 	}
 }
