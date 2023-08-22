@@ -102,7 +102,7 @@ func (sc *ShardCache) Get(key any) any {
 			delete(sc.dataMap, key)
 			sc.lruList.Remove(ele)
 			sc.Unlock()
-			
+
 			if sc.CallBackFunc != nil {
 				go sc.CallBackFunc(key, kv.value)
 			}
@@ -129,15 +129,23 @@ func (sc *ShardCache) Size() int {
 func (sc *ShardCache) Clean() int {
 	sc.RLock()
 	expiredKeys := make([]any, 0)
-	for key, ele := range sc.dataMap {
+	ele := sc.lruList.Front()
+	for ele != nil {
 		kv := ele.Value.(KVItem)
 		if time.Now().After(kv.expiredAt) {
-			expiredKeys = append(expiredKeys, key)
+			expiredKeys = append(expiredKeys, kv.key)
 		}
+		if len(expiredKeys) > 20 {
+			break
+		}
+
+		ele = ele.Next()
 	}
 	sc.RUnlock()
+
 	for _, key := range expiredKeys {
 		sc.Remove(key)
 	}
+
 	return len(expiredKeys)
 }
