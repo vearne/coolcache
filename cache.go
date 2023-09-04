@@ -10,7 +10,7 @@ import (
 )
 
 type Cache struct {
-	Name string
+	Kind string
 	Cap  uint64
 	// shard number
 	ShardNumber         uint64
@@ -25,7 +25,7 @@ type Cache struct {
 
 func NewCache(opts ...Option) *Cache {
 	c := Cache{
-		Name:                "default",
+		Kind:                "default",
 		Cap:                 1000000,
 		ShardNumber:         100,
 		ExpireCleanInterval: 100 * time.Millisecond,
@@ -49,7 +49,7 @@ func NewCache(opts ...Option) *Cache {
 		prometheus.CounterOpts{
 			Name:        PromMetricCacheRequestTotalName,
 			Help:        PromMetricCacheRequestTotalHelp,
-			ConstLabels: map[string]string{"name": c.Name},
+			ConstLabels: map[string]string{"kind": c.Kind},
 		},
 		[]string{"state"},
 	)
@@ -58,7 +58,7 @@ func NewCache(opts ...Option) *Cache {
 		prometheus.GaugeOpts{
 			Name:        PromMetricCacheSizeName,
 			Help:        PromMetricCacheSizeHelp,
-			ConstLabels: map[string]string{"name": c.Name},
+			ConstLabels: map[string]string{"kind": c.Kind},
 		},
 		func() float64 { return float64(c.Size()) },
 	)
@@ -131,7 +131,7 @@ func (c *Cache) Clean() {
 			slog.Debug("Clean: shards[%d], count:%v", idx, count)
 		case <-c.ExitChan:
 			// do some clean task
-			slog.Debug("cache:%v exit...", c.Name)
+			slog.Debug("cache:%v exit...", c.Kind)
 			return
 		}
 	}

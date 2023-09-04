@@ -8,7 +8,7 @@ import (
 )
 
 func TestSetGet(t *testing.T) {
-	cache := NewCache(WithName("test1"))
+	cache := NewCache(WithKind("test1"))
 	for i := 0; i < 100; i++ {
 		key := strconv.Itoa(i)
 		value := key
@@ -21,7 +21,7 @@ func TestSetGet(t *testing.T) {
 	}
 }
 func TestSetRemoveGet(t *testing.T) {
-	cache := NewCache(WithName("test2"))
+	cache := NewCache(WithKind("test2"))
 	for i := 0; i < 100; i++ {
 		key := strconv.Itoa(i)
 		value := key
@@ -41,7 +41,7 @@ func TestSetRemoveGet(t *testing.T) {
 }
 
 func TestExire(t *testing.T) {
-	cache := NewCache(WithName("test3"))
+	cache := NewCache(WithKind("test3"))
 	for i := 0; i < 100; i++ {
 		key := strconv.Itoa(i)
 		value := key

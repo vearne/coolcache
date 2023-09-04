@@ -7,9 +7,9 @@ import (
 type CallBackFunc func(key, value any)
 type Option func(cache *Cache)
 
-func WithName(name string) Option {
+func WithKind(kind string) Option {
 	return func(c *Cache) {
-		c.Name = name
+		c.Kind = kind
 	}
 }
 
